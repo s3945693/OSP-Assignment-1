@@ -14,12 +14,20 @@ writer::writer(const std::string& name) {
 }
 
 void writer::run() {
-    /* open the file for writing */
-    out.open("output.txt");
+    out.open("testing.txt");
+
+    //check if there are items in the queue
+    if (queue.empty()) {
+        std::cout << "Queue is empty" << std::endl;
+        return;
+    }
+
     /* write each line of the queue to the file */
     for (auto line : queue) {
         out << line << std::endl;
+        out << "test" << std::endl;
     }
+    std::cout << "writer finished" << std::endl;
     /* close the file */
     out.close();
 }

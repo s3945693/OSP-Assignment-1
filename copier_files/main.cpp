@@ -17,6 +17,8 @@ int main(int argc, char** argv) {
     /* create a reader object and a writer object */
     writer w(argv[2]);
     reader r(argv[1], w);
-
+    
+    r.run();
+    w.run();
     return EXIT_SUCCESS;
 }
