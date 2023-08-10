@@ -2,6 +2,7 @@
  * startup code provided by Paul Miller for COSC1114 - Operating Systems
  * Principles
  **/
+//g++ main.cpp reader.cpp writer.cpp -o file_copier
 #include "reader.h"
 #include <fstream>
 #include <functional>
