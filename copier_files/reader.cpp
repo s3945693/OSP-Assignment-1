@@ -4,13 +4,11 @@
  **/
 #include "reader.h"
 #include <functional>
-
-reader::reader(const std::string& name, writer& mywriter) {
+#include <iostream>
+reader::reader(const std::string& name, writer& mywriter) : thewriter(mywriter) {
     /* open the file for reading */
-    in = std::ifstream(name);
-    
+    in.open(name);
 }
-
 void reader::run() {
     /* read in each line of the file and append it to the writer's queue */
     std::string line;

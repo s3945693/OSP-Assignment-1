@@ -15,12 +15,13 @@ writer::writer(const std::string& name) {
 
 void writer::run() {
     /* open the file for writing */
-    type = std::ofstream(out);
-
+    out.open("output.txt");
     /* write each line of the queue to the file */
     for (auto line : queue) {
         out << line << std::endl;
     }
+    /* close the file */
+    out.close();
 }
 
 void writer::append(const std::string& line) {
