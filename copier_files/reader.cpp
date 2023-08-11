@@ -7,10 +7,10 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+
 reader::reader(const std::string& name, writer& mywriter) : thewriter(mywriter) {
     /* open the file for reading */
-    std::ifstream infile = std::ifstream(name);
-    in = std::move(infile);
+    in.open(name);
     std::cout << name << std::endl;
 }
 void reader::run() {
@@ -21,6 +21,7 @@ void reader::run() {
     //read the file 
     while (std::getline(in, line)) {
         thewriter.append(line);
+        std::cout<< line << std::endl;
     }
 
     /* close the file */

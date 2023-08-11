@@ -9,7 +9,9 @@
 /**
  * implement these functions requred for the writer class
  **/
-void writer::init(const std::string& name) {}
+void writer::init(const std::string& name) {
+    out.open(name);
+}
 
 void writer::run() {}
 

@@ -2,6 +2,7 @@
  * startup code provided by Paul Miller for COSC1114 - Operating Systems
  * Principles
  **/
+#include <pthread.h>
 #include "reader.h"
 #include "writer.h"
 #include <cstdlib>
@@ -23,6 +24,18 @@ int main(int argc, char** argv) {
     /**
      * check command line arguments
      **/
+    if (argc != 4) {
+        std::cerr << "Usage: ./CHANGETHIS <source> <destination>\n";
+        return EXIT_FAILURE;
+    }
+
+    /**
+     * create a reader object and a writer object
+     **/
+    writer w;w.init(argv[2]);
+    reader r;r.init(argv[1]);
+
+
     /**
      * process command line arguments
      **/

@@ -8,13 +8,12 @@
 /**
  * provide your implementation for the writer functions here
  **/
-writer::writer(const std::string& name) {
+writer::writer(const std::string& name):out(name) {
     /* open the file for writing */
-    out = std::ofstream(name);
+    
 }
 
 void writer::run() {
-    out.open("testing.txt");
 
     //check if there are items in the queue
     if (queue.empty()) {
@@ -23,9 +22,9 @@ void writer::run() {
     }
 
     /* write each line of the queue to the file */
-    for (auto line : queue) {
-        out << line << std::endl;
-        out << "test" << std::endl;
+    while (!queue.empty()) {
+        out<< queue.front() << std::endl;
+        queue.pop_front();
     }
     std::cout << "writer finished" << std::endl;
     /* close the file */
