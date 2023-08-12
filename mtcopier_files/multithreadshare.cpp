@@ -69,7 +69,7 @@ void* multithreadshare::writerThread(void* arg) {
 
         // Write line to output file
         out << line;
-        if (!queue.empty() && queue.front()!="EOF") {
+        if (queue.front()!="EOF") {
             out << std::endl;
         }
 

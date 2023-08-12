@@ -23,8 +23,11 @@ void writer::run() {
 
     /* write each line of the queue to the file */
     while (!queue.empty()) {
-        out<< queue.front() << std::endl;
+        out<< queue.front();
         queue.pop_front();
+        if (!queue.empty()) {
+            out << std::endl;
+        }
     }
     std::cout << "writer finished" << std::endl;
     /* close the file */
