@@ -5,12 +5,13 @@ pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
 std::queue<std::string> multithreadshare::queue;
 
-multithreadshare::multithreadshare(const std::string& inputFile, const std::string& outputFile) {
+multithreadshare::multithreadshare(const std::string& inputFile, const std::string& outputFile , const int count ) {
     // Open input file
     in.open(inputFile);
 
     // Open output file
     out.open(outputFile);
+    this->count = count;
 }
 
 void* multithreadshare::readerThread(void* arg) {

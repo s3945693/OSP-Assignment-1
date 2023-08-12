@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-//g++ -Wall -Werror -pthread multithreadshare.cpp main.cpp -o mtCopier
+
 #ifndef MTSHARE
 #define MTSHARE
 
@@ -17,7 +17,7 @@ class multithreadshare{
         std::ofstream out;
         int count;
         static std::queue<std::string> queue;
-        multithreadshare(const std::string& inputFile, const std::string& outputFile);
+        multithreadshare(const std::string& inputFile, const std::string& outputFile, const int count);
 
         void* readerThread(void* arg);
         void* writerThread(void* arg);
