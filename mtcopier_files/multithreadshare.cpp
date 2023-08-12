@@ -88,8 +88,8 @@ static void* writerThreadWrapper(void* arg) {
 }
 
 void multithreadshare::run() {
-    int numReaders = 5;
-    int numWriters = 5;
+    int numReaders = count;
+    int numWriters = count;
     std::vector<pthread_t> readers(numReaders);
     std::vector<pthread_t> writers(numWriters);
     std::cout << "Running multithreadshare" << std::endl;

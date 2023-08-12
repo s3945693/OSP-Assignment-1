@@ -25,10 +25,13 @@ int main(int argc, char** argv) {
         
         return EXIT_FAILURE;
     }
-    if (isNumber(argv[3])){ 
+    std::cout << "is num check" << std::endl;
+
+    if (!isNumber(argv[3])){ 
             if (std::stoi(argv[3])<1){
                 std::cerr << "Thread count must be greater than 0\n";
             }
+        std::cout << "The third argument was not a number" << std::endl;
         return EXIT_FAILURE;  
     }
     
