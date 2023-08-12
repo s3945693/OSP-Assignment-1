@@ -68,7 +68,12 @@ void* multithreadshare::writerThread(void* arg) {
         }
 
         // Write line to output file
-        out << line << std::endl;
+        out << line;
+        if (!queue.empty() && queue.front()!="EOF") {
+            out << std::endl;
+        }
+
+        
 
         // Unlock the mutex
         pthread_mutex_unlock(&mutex);
