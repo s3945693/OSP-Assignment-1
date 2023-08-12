@@ -11,9 +11,10 @@
 #include <string>
 #include <vector>
 #include "multithreadshare.h"
-
-//g++ -Wall -Werror -pthread multithreadshare.cpp main.cpp -o mtCopier
-//  ./mtCopier mtest.txt mtestR.txt
+// s3945693@titan.csit.rmit.edu.au
+// g++ -Wall -Werror -std=c++20 -lpthread multithreadshare.cpp main.cpp -o mtCopier
+// ./mtCopier mtest.txt mtestR.txt
+// ./mtCopier ~e70949/shared/osp2023/data.512m /tmp/s3945693output 100
 bool isNumber(std::string s);
 int main(int argc, char** argv) {
     /**
@@ -25,8 +26,10 @@ int main(int argc, char** argv) {
         
         return EXIT_FAILURE;
     }
-    std::cout << "is num check" << std::endl;
-
+    if (argv[1] == argv[2]){
+        std::cerr << "Source and destination files must be different\n";
+        return EXIT_FAILURE;
+    }
     if (!isNumber(argv[3])){ 
             if (std::stoi(argv[3])<1){
                 std::cerr << "Thread count must be greater than 0\n";
