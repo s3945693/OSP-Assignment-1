@@ -11,10 +11,12 @@
 #include <string>
 #include <vector>
 #include "multithreadshare.h"
+#include <time.h>
+// scl enable devtoolset-11 bash
 // s3945693@titan.csit.rmit.edu.au
-// g++ -Wall -Werror -std=c++20 -lpthread multithreadshare.cpp main.cpp -o mtCopier
-// ./mtCopier mtest.txt mtestR.txt
-// ./mtCopier ~e70949/shared/osp2023/data.512m /tmp/s3945693output 100
+// g++ -Wall -Werror -std=c++20 -lpthread multithreadshare.cpp main.cpp -o mtCopier -t
+// ./mtcopier cop.txt out.txt 10
+// ./mtcopier ~e70949/shared/osp2023/data.512m /tmp/s3945693output 100
 bool isNumber(std::string s);
 int main(int argc, char** argv) {
     /**
@@ -39,9 +41,21 @@ int main(int argc, char** argv) {
     }
     
     int count = std::stoi(argv[3]);
-    multithreadshare test(argv[1],argv[2], count);
-    test.run();
+    multithreadshare* test = new multithreadshare(argv[1],argv[2], count);
+    clock_t start, end;
+    double cpu_time_used;
+    start = clock();
+    
+    test->run();
+    end = clock();
 
+    cpu_time_used = (double)(end - start);
+
+    // Convert CPU time to seconds
+    double seconds = cpu_time_used / CLOCKS_PER_SEC;
+
+    printf("CPU time used: %f seconds\n", seconds);
+    delete test;
 
     return EXIT_SUCCESS;
 }
