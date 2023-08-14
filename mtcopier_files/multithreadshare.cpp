@@ -1,5 +1,7 @@
 #include <pthread.h>
 #include "multithreadshare.h"
+#include <list>
+
 // Declare mutex and condition variable
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
@@ -26,7 +28,6 @@ void* multithreadshare::readerThread(void* arg) {
 
         // Read line from input file
         if (!std::getline(in, line)) {
-            std::cout<< "Finished reading file" << std::endl;
             pthread_mutex_unlock(&mutex);
             break;
         }
@@ -47,44 +48,47 @@ void* multithreadshare::readerThread(void* arg) {
 void* multithreadshare::writerThread(void* arg) {
     // Code for writer thread
     std::string line;
-
+    //std::cout <<"queue exists" << std::endl;
     while (!queue.empty()) {
         // Lock the mutex
+        //std::cout << "mutex lock" <<std::endl;
         pthread_mutex_lock(&mutex);
-
+        //std::cout << "after lock" <<std::endl;
         // Wait for line in queue or eof flag to be set
         while (queue.empty() && !terminateWriters) {
+            //std::cout <<"waiting line" <<std::endl;
             pthread_cond_wait(&cond, &mutex);
         }
-
+        //std::cout << "b4 break" <<std::endl;
         // Check if the queue is empty and the terminateWriters flag is set
         if (queue.empty() && terminateWriters) {
+            //std::cout <<"terminate line" <<std::endl;
             pthread_mutex_unlock(&mutex);
-            std::cout << "file has been written" << std::endl;
             break;
         }
 
         // Remove line from queue
-        line = queue.front();
-        queue.pop();
+        //std::cout << "b4 write" <<std::endl;
+        if(!queue.empty()){
+            //std::cout <<"writing line" <<std::endl;
+            line = queue.front();
+            queue.pop();
 
-        // Write line to output file
-        out << line; out<<std::endl;
+            // Write line to output file
+            out << line; out<<std::endl;
+        }
 
         // Unlock the mutex
+        //std::cout << "unlock lock" <<std::endl;
         pthread_mutex_unlock(&mutex);
     }
-
+    //std::cout << "null" <<std::endl;
     return NULL;
 }
 
 void multithreadshare::terminateWriterThreads() {
     // Lock the mutex before modifying the termination flag
     pthread_mutex_lock(&mutex);
-
-    // Wait for the queue to be empty
-    
-
     terminateWriters = true;
     // Signal the condition variable to wake up waiting writer threads
     pthread_cond_broadcast(&cond);
@@ -103,41 +107,50 @@ static void* writerThreadWrapper(void* arg) {
     return obj->writerThread(NULL);
 }
 
+
+///*
 void multithreadshare::run() {
     int numReaders = count;
     int numWriters = count;
-    std::vector<pthread_t>* readers = new std::vector<pthread_t>(numReaders);
-    std::vector<pthread_t>* writers = new std::vector<pthread_t>(numWriters);
-
+    std::vector<pthread_t*> readers;
+    std::vector<pthread_t*> writers;
     std::cout << "Running multithreadshare" << std::endl;
+    
     // Create reader threads
     for (int i = 0; i < numReaders; i++) {
-        pthread_create(&(*readers)[i], NULL, readerThreadWrapper, this);
+        pthread_t* thread = new pthread_t;
+        pthread_create(thread, NULL, readerThreadWrapper, this);
+        readers.push_back(thread);
     }
 
+    
+
+    std::cout << "Finished creating threads" << std::endl;
+
+    // Wait for all threads to finish
+    for (pthread_t* thread : readers) {
+        pthread_join(*thread, NULL);
+        delete thread;
+    }
+    std::cout << "Finished joining read threads" << std::endl;
+    terminateWriterThreads();
     // Create writer threads
     for (int i = 0; i < numWriters; i++) {
-        pthread_create(&(*writers)[i], NULL, writerThreadWrapper, this);
+        pthread_t* thread = new pthread_t;
+        pthread_create(thread, NULL, writerThreadWrapper, this);
+        writers.push_back(thread);
     }
+    
+    for (pthread_t* thread : writers) {
+        pthread_join(*thread, NULL);
+        delete thread;
+    }
+    std::cout << "Finished writer threads" << std::endl;
 
-    std::cout << "Finshied creatin threads" << std::endl;
-    // Wait for all threads to finish
-    for (int i = 0; i < numReaders; i++) {
-        pthread_join((*readers)[i], NULL);
-    }
-    terminateWriterThreads();
-
-    std::cout << numWriters << std::endl;
-    for (int i = 0; i < numWriters; i++) {
-        std::cout << "at thread" << i << (*writers)[i];
-        pthread_join((*writers)[i], NULL);
-        std::cout<< ": Done" << std::endl;
-    }
-    std::cout << "Finshied write threads" << std::endl;
     in.close();
     out.close();
-    delete readers;
-    delete writers;
+
     pthread_mutex_destroy(&mutex);
     pthread_cond_destroy(&cond);
 }
+//*/
