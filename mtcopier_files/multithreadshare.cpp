@@ -75,7 +75,7 @@ void* multithreadshare::writerThread(void* arg) {
             queue.pop();
 
             // Write line to output file
-            out << line; out<<std::endl;
+            out << line; if(!queue.empty()){out<<std::endl;}
         }
 
         // Unlock the mutex
