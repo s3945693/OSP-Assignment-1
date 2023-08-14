@@ -20,7 +20,7 @@ copier:
 
 mtcopier:
 	@echo making multi-threaded copier...
-	g++ -Wall -Werror -std=c++20 -pthread -g ./mtcopier_files/*.cpp -o mtcopier -t
+	g++ -Wall -Werror -std=c++20 -lpthread -g ./mtcopier_files/*.cpp -o mtcopier -t
 	@echo "done"
 #clean by going into each directory and running make clean
 clean: 
