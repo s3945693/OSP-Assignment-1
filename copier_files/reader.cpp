@@ -21,7 +21,7 @@ void reader::run() {
     //read the file 
     while (std::getline(in, line)) {
         thewriter.append(line);
-        std::cout<< line << std::endl;
+        //std::cout<< line << std::endl;
     }
 
     /* close the file */
