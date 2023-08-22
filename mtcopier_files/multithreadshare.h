@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <chrono>  
 
 
 #ifndef MTSHARE
@@ -13,17 +14,24 @@
 class multithreadshare{
 
     public: 
-        std::ifstream in;
-        std::ofstream out;
-        int count;
+        static std::ifstream in;
+        static std::ofstream out;
+        static int count;
         static std::deque<std::string> queue;
-        bool terminateWriters = false;
+        static bool terminateWriters;
         multithreadshare(const std::string& inputFile, const std::string& outputFile, const int count);
-
-        void* readerThread(void* arg);
-        void* writerThread(void* arg);
+        static void* readerThread(void* arg);
+        static void* writerThread(void* arg);
         void run();
-        void terminateWriterThreads();
+        static void terminateWriterThreads();
+        static double readerLockTime;
+        static double writerLockTime;
+        static double readerWaitTime;
+        static double writerWaitTime;
+        static double readerCalled;
+        static double writerCalled;
+        static std::chrono::high_resolution_clock::time_point startTime; 
+
 };
 
 #endif

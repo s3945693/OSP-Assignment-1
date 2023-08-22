@@ -15,8 +15,9 @@
 // scl enable devtoolset-11 bash
 // s3945693@titan.csit.rmit.edu.au
 // g++ -Wall -Werror -std=c++20 -lpthread multithreadshare.cpp main.cpp -o mtCopier -t
-// ./mtcopier cop.txt out.txt 10
-// ./mtcopier ~e70949/shared/osp2023/data.512m /tmp/s3945693output 100
+// ./mtcopier 10 cop.txt out.txt
+// ./mtcopier 100 ~e70949/shared/osp2023/data.512m /tmp/s3945693output
+// valgrind --track-origins=yes --leak-check=full --show-leak-kinds=all ./mtcopier 50 data.512m test.512m
 bool isNumber(std::string s);
 int main(int argc, char** argv) {
     /**
@@ -28,33 +29,21 @@ int main(int argc, char** argv) {
         
         return EXIT_FAILURE;
     }
-    if (argv[1] == argv[2]){
+    if (argv[2] == argv[3]){
         std::cerr << "Source and destination files must be different\n";
         return EXIT_FAILURE;
     }
-    if (!isNumber(argv[3])){ 
-            if (std::stoi(argv[3])<1){
+    if (!isNumber(argv[1])){ 
+            if (std::stoi(argv[1])<1){
                 std::cerr << "Thread count must be greater than 0\n";
             }
         std::cout << "The third argument was not a number" << std::endl;
         return EXIT_FAILURE;  
     }
     
-    int count = std::stoi(argv[3]);
-    multithreadshare* test = new multithreadshare(argv[1],argv[2], count);
-    clock_t start, end;
-    double cpu_time_used;
-    start = clock();
-    
+    int count = std::stoi(argv[1]);
+    multithreadshare* test = new multithreadshare(argv[2],argv[3], count);
     test->run();
-    end = clock();
-
-    cpu_time_used = (double)(end - start);
-
-    // Convert CPU time to seconds
-    double seconds = cpu_time_used / CLOCKS_PER_SEC;
-
-    printf("CPU time used: %f seconds\n", seconds);
     delete test;
 
     return EXIT_SUCCESS;
