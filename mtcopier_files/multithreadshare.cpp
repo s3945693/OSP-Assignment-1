@@ -7,10 +7,11 @@
 #include <unistd.h>
 #include <time.h>
 
-// Declare mutex and condition variable
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t reader_cond = PTHREAD_COND_INITIALIZER;
 pthread_cond_t writer_cond = PTHREAD_COND_INITIALIZER;
+
+//for some reason the file would not compile without these declerations
 std::deque<std::vector<char>> multithreadshare::queue;
 std::deque<std::vector<char>>::size_type buffer_size = 100000000;
 
@@ -28,11 +29,11 @@ std::chrono::high_resolution_clock::time_point
 multithreadshare::start;
 
 multithreadshare::multithreadshare(const std::string& inputFile, const std::string& outputFile , const int count ) {
-    // Open input file
+    
     in.open(inputFile);
     terminateWriters = false;
-    // Open output file
     out.open(outputFile);
+    
     this->count = count;
     readerLockTime = 0;
     writerLockTime = 0;
@@ -43,42 +44,41 @@ multithreadshare::multithreadshare(const std::string& inputFile, const std::stri
     start = std::chrono::high_resolution_clock::now();
 }
 void* multithreadshare::readerThread(void* arg) {
-    // Code for reader thread
-    std::vector<char> buffer(50000); // Adjust the buffer size as needed
+    //buffer for reader
+    std::vector<char> buffer(50000); 
 
     while (true) {
-        // Lock the mutex
+        
         auto startLock = std::chrono::high_resolution_clock::now();
         pthread_mutex_lock(&mutex);
         readerCalled++;
 
         auto startWait = std::chrono::high_resolution_clock::now();
-        // Wait for space in buffer
+        //condition to wait for space
         while (queue.size() >= buffer_size) {
             pthread_cond_wait(&reader_cond, &mutex);
         }
         auto endWait = std::chrono::high_resolution_clock::now();
         readerWaitTime += std::chrono::duration<double>(endWait - startWait).count();
 
-        // Read bytes from input file
         in.read(buffer.data(), buffer.size());
         size_t bytesRead = in.gcount();
 
-        // If no bytes read, turn on termination condition
+        //if no bytes read, turn on termination condition
         if (bytesRead == 0) {
             terminateWriters = true;
             pthread_cond_broadcast(&reader_cond);
+            pthread_mutex_unlock(&mutex);
             auto endLock = std::chrono::high_resolution_clock::now();
             readerLockTime += std::chrono::duration<double>(endLock - startLock).count();
-            pthread_mutex_unlock(&mutex);
             break;
         }
 
-        // Add read bytes to the queue
+        //add read bytes to the queue
         queue.emplace_back(buffer.begin(), buffer.begin() + bytesRead);
-        // Signal writer thread to write to file
+        
+        //signal writer thread to write to file
         pthread_cond_signal(&writer_cond);
-        // Unlock the mutex
         pthread_mutex_unlock(&mutex);
         auto endLock = std::chrono::high_resolution_clock::now();
         readerLockTime += std::chrono::duration<double>(endLock - startLock).count();
@@ -88,42 +88,41 @@ void* multithreadshare::readerThread(void* arg) {
 }
 
 void* multithreadshare::writerThread(void* arg) {
-    // Code for writer thread
     while (true) {
-        // Lock the mutex
+
         auto startLock = std::chrono::high_resolution_clock::now();
         pthread_mutex_lock(&mutex);
         writerCalled++;
 
         auto startWait = std::chrono::high_resolution_clock::now();
-        // Wait for data in the queue or termination
+        //wait for bytes from readers
         while (queue.empty() && !terminateWriters) {
             pthread_cond_wait(&writer_cond, &mutex);
         }
         auto endWait = std::chrono::high_resolution_clock::now();
         writerWaitTime += std::chrono::duration<double>(endWait - startWait).count();
 
-        // Start to write to queue
         if (!queue.empty()) {
             std::vector<char> bytesToWrite = queue.front();
             queue.pop_front();
 
-            // Write bytes to the output file
             out.write(bytesToWrite.data(), bytesToWrite.size());
-            out.flush(); // Flush the buffer
+            out.flush();
 
-            // Signal reader thread to read more bytes if not eof
             if (!terminateWriters) {
                 pthread_cond_signal(&reader_cond);
             }
-        } else if (terminateWriters) {
+        } 
+
+        //if file has been fully read, signal writers to finish their job
+        else if (terminateWriters) {
             pthread_cond_broadcast(&writer_cond);
+            pthread_mutex_unlock(&mutex);
             auto endLock = std::chrono::high_resolution_clock::now();
             writerLockTime += std::chrono::duration<double>(endLock - startLock).count();
-            pthread_mutex_unlock(&mutex);
             break;
         }
-        // Unlock the mutex
+
         pthread_mutex_unlock(&mutex);
         auto endLock = std::chrono::high_resolution_clock::now();
         writerLockTime += std::chrono::duration<double>(endLock - startLock).count();
@@ -134,7 +133,6 @@ void* multithreadshare::writerThread(void* arg) {
 
 
 void multithreadshare::terminateWriterThreads() {
-    // Lock the mutex before modifying the termination flag
     pthread_mutex_lock(&mutex);
     terminateWriters = true;
     pthread_cond_broadcast(&writer_cond);
@@ -146,10 +144,10 @@ void multithreadshare::run() {
     int numWriters = count;
     std::vector<pthread_t> readers;
     readers.reserve(numReaders);
-    std::vector<pthread_t> writers;  // Use vector for writers
+    std::vector<pthread_t> writers; 
     writers.reserve(numWriters);
     std::cout << "Running multithreadshare" << std::endl;
-
+    //ran into errors while creating threads, fix was to loop till thread was created
     for (int i = 0; i < numReaders; i++) {
         pthread_t thread;
         int err = pthread_create(&thread, NULL, readerThread, NULL);
@@ -166,7 +164,7 @@ void multithreadshare::run() {
         //std::cout << i <<" "<< queue.size()<<std::endl;
         pthread_t thread;
         
-        int err = pthread_create(&thread, NULL, writerThread, NULL);  // Use writers.at(i)
+        int err = pthread_create(&thread, NULL, writerThread, NULL); 
         while(err!=0){err = pthread_create(&thread, NULL, writerThread, NULL);}
         if (err != 0) {
             std::cerr << "Failed to create writer thread: " << strerror(err) << std::endl;
@@ -182,14 +180,14 @@ void multithreadshare::run() {
     terminateWriterThreads();
     std::cout << "joining write" << std::endl;
     for (int i = 0; i < numWriters; i++) {
-        pthread_join(writers.at(i), NULL);  // Use writers.at(i)
+        pthread_join(writers.at(i), NULL); 
         //std::cout << "Finished joining writer: " << i << std::endl;
     }
     auto end = std::chrono::high_resolution_clock::now();
     double total = std::chrono::duration<double>(end - start).count();
-    // Print results
+
     std::cout << "Total runtime: " << total << " seconds" << std::endl;
-    std::cout << "Total/Averayge Reader lock time: " << readerLockTime << " / " << (readerLockTime / readerCalled) << " seconds" << std::endl;
+    std::cout << "Total/Average Reader lock time: " << readerLockTime << " / " << (readerLockTime / readerCalled) << " seconds" << std::endl;
     std::cout << "Total/Average Reader wait time: " << readerWaitTime << " / " << (readerWaitTime / readerCalled) << " seconds" << std::endl;
     std::cout << "Total/Average Writer lock time: " << writerLockTime << " / " << (writerLockTime / writerCalled) << " seconds" << std::endl;
     std::cout << "Total/Average Writer wait time: " << writerWaitTime << " / " << (writerWaitTime / writerCalled) << " seconds" << std::endl;
