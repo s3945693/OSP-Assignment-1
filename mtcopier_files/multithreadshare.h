@@ -17,7 +17,7 @@ class multithreadshare{
         static std::ifstream in;
         static std::ofstream out;
         static int count;
-        static std::deque<std::string> queue;
+        static std::deque<std::vector<char>> queue;
         static bool terminateWriters;
         multithreadshare(const std::string& inputFile, const std::string& outputFile, const int count);
         static void* readerThread(void* arg);

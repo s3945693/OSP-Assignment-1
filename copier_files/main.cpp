@@ -2,11 +2,12 @@
  * startup code provided by Paul Miller for COSC1114 - Operating Systems
  * Principles
  **/
-#include "reader.h"
-#include "writer.h"
+
+//scl enable devtoolset-11 bash
+
 #include <cstdlib>
-#include <chrono>  
-#include <iostream>
+#include <time.h>
+#include "copier.h"
 /* global variables if needed go here */
 int main(int argc, char** argv) {
     /* check command line arguments */
@@ -17,18 +18,7 @@ int main(int argc, char** argv) {
         return EXIT_FAILURE;
     }
 
-    /* create a reader object and a writer object */
-    writer w(argv[2]);
-    reader r(argv[1], w);
-    auto startTime = std::chrono::high_resolution_clock::now();
-    r.run();
-    auto endWait = std::chrono::high_resolution_clock::now();
-    double readerWaitTime = std::chrono::duration<double>(endWait - startTime).count();
-    std::cout << "Reader time: " << readerWaitTime << std::endl;
-    startTime = std::chrono::high_resolution_clock::now();
-    w.run();
-    endWait = std::chrono::high_resolution_clock::now();
-    readerWaitTime = std::chrono::duration<double>(endWait - startTime).count();
-    std::cout << "Writer time: " << readerWaitTime << std::endl;
+    copier m(argv[1], argv[2]);
+    m.run();
     return EXIT_SUCCESS;
 }

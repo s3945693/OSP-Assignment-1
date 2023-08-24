@@ -11,7 +11,9 @@
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t reader_cond = PTHREAD_COND_INITIALIZER;
 pthread_cond_t writer_cond = PTHREAD_COND_INITIALIZER;
-std::deque<std::string> multithreadshare::queue;
+std::deque<std::vector<char>> multithreadshare::queue;
+std::deque<std::vector<char>>::size_type buffer_size = 100000000;
+
 std::ifstream multithreadshare::in;
 bool multithreadshare::terminateWriters;
 std::ofstream multithreadshare::out;
@@ -42,17 +44,14 @@ multithreadshare::multithreadshare(const std::string& inputFile, const std::stri
 }
 void* multithreadshare::readerThread(void* arg) {
     // Code for reader thread
-    std::string line;
-    size_t buffer_size = 1000000000000;
+    std::vector<char> buffer(50000); // Adjust the buffer size as needed
 
     while (true) {
         // Lock the mutex
+        auto startLock = std::chrono::high_resolution_clock::now();
         pthread_mutex_lock(&mutex);
         readerCalled++;
-        //clock_t startLock, endLock, startWait, endWait;
-        //startLock = clock();
-        //startWait = clock();
-        auto startLock = std::chrono::high_resolution_clock::now();
+
         auto startWait = std::chrono::high_resolution_clock::now();
         // Wait for space in buffer
         while (queue.size() >= buffer_size) {
@@ -61,8 +60,12 @@ void* multithreadshare::readerThread(void* arg) {
         auto endWait = std::chrono::high_resolution_clock::now();
         readerWaitTime += std::chrono::duration<double>(endWait - startWait).count();
 
-        // Read line from input file and if no lines, turn on termination condition
-        if (!std::getline(in, line)) {
+        // Read bytes from input file
+        in.read(buffer.data(), buffer.size());
+        size_t bytesRead = in.gcount();
+
+        // If no bytes read, turn on termination condition
+        if (bytesRead == 0) {
             terminateWriters = true;
             pthread_cond_broadcast(&reader_cond);
             auto endLock = std::chrono::high_resolution_clock::now();
@@ -70,14 +73,15 @@ void* multithreadshare::readerThread(void* arg) {
             pthread_mutex_unlock(&mutex);
             break;
         }
-        // Add line to queue
-        queue.push_back(line);
+
+        // Add read bytes to the queue
+        queue.emplace_back(buffer.begin(), buffer.begin() + bytesRead);
         // Signal writer thread to write to file
         pthread_cond_signal(&writer_cond);
         // Unlock the mutex
+        pthread_mutex_unlock(&mutex);
         auto endLock = std::chrono::high_resolution_clock::now();
         readerLockTime += std::chrono::duration<double>(endLock - startLock).count();
-        pthread_mutex_unlock(&mutex);
     }
 
     return NULL;
@@ -85,51 +89,49 @@ void* multithreadshare::readerThread(void* arg) {
 
 void* multithreadshare::writerThread(void* arg) {
     // Code for writer thread
-    std::string line;
     while (true) {
         // Lock the mutex
+        auto startLock = std::chrono::high_resolution_clock::now();
         pthread_mutex_lock(&mutex);
         writerCalled++;
-        //clock_t startLock, endLock, startWait, endWait;
-        //startLock = clock();
-        //startWait = clock();
-        auto startLock = std::chrono::high_resolution_clock::now();
+
         auto startWait = std::chrono::high_resolution_clock::now();
-        //wait for readers to append to queue
+        // Wait for data in the queue or termination
         while (queue.empty() && !terminateWriters) {
             pthread_cond_wait(&writer_cond, &mutex);
         }
         auto endWait = std::chrono::high_resolution_clock::now();
         writerWaitTime += std::chrono::duration<double>(endWait - startWait).count();
+
         // Start to write to queue
-        if (!queue.empty()){
-            line = queue.front();
+        if (!queue.empty()) {
+            std::vector<char> bytesToWrite = queue.front();
             queue.pop_front();
-            //check if file already has a line
-            if (out.tellp() != 0) {
-                out << std::endl;
+
+            // Write bytes to the output file
+            out.write(bytesToWrite.data(), bytesToWrite.size());
+            out.flush(); // Flush the buffer
+
+            // Signal reader thread to read more bytes if not eof
+            if (!terminateWriters) {
+                pthread_cond_signal(&reader_cond);
             }
-            out << line;
-        }
-        //termination condition if queue is empty and readers aren't reading
-        else if (terminateWriters){
-            //std::cout << pthread_self() << std::endl;
+        } else if (terminateWriters) {
             pthread_cond_broadcast(&writer_cond);
             auto endLock = std::chrono::high_resolution_clock::now();
             writerLockTime += std::chrono::duration<double>(endLock - startLock).count();
             pthread_mutex_unlock(&mutex);
             break;
         }
-        // Signal reader thread to read more lines if not eof
-        if (!terminateWriters){pthread_cond_signal(&reader_cond);}
         // Unlock the mutex
+        pthread_mutex_unlock(&mutex);
         auto endLock = std::chrono::high_resolution_clock::now();
         writerLockTime += std::chrono::duration<double>(endLock - startLock).count();
-        pthread_mutex_unlock(&mutex);
     }
 
     return NULL;
 }
+
 
 void multithreadshare::terminateWriterThreads() {
     // Lock the mutex before modifying the termination flag
