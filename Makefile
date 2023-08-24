@@ -8,7 +8,7 @@ all:
 	$(MAKE) clean
 	$(MAKE) copier
 	$(MAKE) mtcopier
-	$(MAKE) mtest
+	$(MAKE) all
 
 
 #go into the copier_files filepath and run the make command there
@@ -26,10 +26,11 @@ mtcopier:
 clean: 
 	@echo "cleaning up..."
 	@rm -rf copier mtcopier *.dSYM
-	
 	@echo "done"
 
-mtest:
-	@echo making mtest...
-	g++ -Wall -Werror -std=c++20 -pthread -g ./mtcopier_files/main.cpp ./mtcopier_files/multithreadshare.cpp -o mtest -t
-	@echo "done"
+all:
+	@echo making mt copier
+	g++ -Wall -Werror -std=c++20 -lpthread -g ./mtcopier_files/*.cpp -o mtcopier -t
+	@echo making copier
+	g++ -Wall -Werror -std=c++20 -g ./copier_files/*.cpp -o copier
+	@echo done

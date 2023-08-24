@@ -12,6 +12,8 @@
 #include <vector>
 #include "multithreadshare.h"
 #include <time.h>
+#include <unistd.h>
+
 // scl enable devtoolset-11 bash
 // s3945693@titan.csit.rmit.edu.au
 // g++ -Wall -Werror -std=c++20 -lpthread multithreadshare.cpp main.cpp -o mtCopier -t

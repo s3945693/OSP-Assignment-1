@@ -189,8 +189,8 @@ void multithreadshare::run() {
     // Print results
     std::cout << "Total runtime: " << totalRuntime << " seconds" << std::endl;
     std::cout << "Total/Averayge Reader lock time: " << readerLockTime << " / " << (readerLockTime / readerCalled) << " seconds" << std::endl;
-    std::cout << "Total/Average Reader wait time: " << readerLockTime << " / " << (readerWaitTime / readerCalled) << " seconds" << std::endl;
-    std::cout << "Total/Average Writer lock time: " << writerWaitTime << " / " << (writerLockTime / writerCalled) << " seconds" << std::endl;
+    std::cout << "Total/Average Reader wait time: " << readerWaitTime << " / " << (readerWaitTime / readerCalled) << " seconds" << std::endl;
+    std::cout << "Total/Average Writer lock time: " << writerLockTime << " / " << (writerLockTime / writerCalled) << " seconds" << std::endl;
     std::cout << "Total/Average Writer wait time: " << writerWaitTime << " / " << (writerWaitTime / writerCalled) << " seconds" << std::endl;
     std::cout << "Average Reader called: " << readerCalled << std::endl;
     std::cout << "Average Writer called: " << writerCalled << std::endl;
