@@ -13,6 +13,7 @@
 #include "multithreadshare.h"
 #include <time.h>
 #include <unistd.h>
+#include <filesystem>
 
 // scl enable devtoolset-11 bash
 // s3945693@titan.csit.rmit.edu.au
@@ -27,7 +28,7 @@ int main(int argc, char** argv) {
      **/
     
     if (argc != 4) {
-        std::cerr << "Usage: ./CHANGETHIS <source> <destination> <thread count>\n";
+        std::cerr << "Usage: ./mtcopier <thread count> <source> <destination>\n";
         
         return EXIT_FAILURE;
     }
@@ -35,14 +36,20 @@ int main(int argc, char** argv) {
         std::cerr << "Source and destination files must be different\n";
         return EXIT_FAILURE;
     }
+
     if (!isNumber(argv[1])){ 
-            if (std::stoi(argv[1])<1){
-                std::cerr << "Thread count must be greater than 0\n";
-            }
         std::cout << "The third argument was not a number" << std::endl;
         return EXIT_FAILURE;  
     }
-    
+    if (std::stoi(argv[1])<1){
+        std::cerr << "Thread count must be greater than 0\n";
+        return EXIT_FAILURE;
+    }
+    if(!std::filesystem::exists(argv[2])){
+        std::cout << "Read file does not exists.\n";
+        return EXIT_FAILURE;
+    }
+
     int count = std::stoi(argv[1]);
     multithreadshare* test = new multithreadshare(argv[2],argv[3], count);
     test->run();

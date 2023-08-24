@@ -30,7 +30,7 @@ class multithreadshare{
         static double writerWaitTime;
         static double readerCalled;
         static double writerCalled;
-        static std::chrono::high_resolution_clock::time_point startTime; 
+        static std::chrono::high_resolution_clock::time_point start; 
 
 };
 

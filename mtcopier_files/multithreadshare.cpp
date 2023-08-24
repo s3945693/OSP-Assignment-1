@@ -25,7 +25,7 @@ double multithreadshare::writerWaitTime;
 double multithreadshare::readerCalled;
 double multithreadshare::writerCalled;
 std::chrono::high_resolution_clock::time_point 
-multithreadshare::startTime;
+multithreadshare::start;
 
 multithreadshare::multithreadshare(const std::string& inputFile, const std::string& outputFile , const int count ) {
     // Open input file
@@ -40,7 +40,7 @@ multithreadshare::multithreadshare(const std::string& inputFile, const std::stri
     writerWaitTime = 0;
     readerCalled = 0;
     writerCalled = 0;
-    startTime = std::chrono::high_resolution_clock::now();
+    start = std::chrono::high_resolution_clock::now();
 }
 void* multithreadshare::readerThread(void* arg) {
     // Code for reader thread
@@ -185,11 +185,10 @@ void multithreadshare::run() {
         pthread_join(writers.at(i), NULL);  // Use writers.at(i)
         //std::cout << "Finished joining writer: " << i << std::endl;
     }
-    auto endTime = std::chrono::high_resolution_clock::now();
-    double totalRuntime = std::chrono::duration<double>(endTime - startTime).count();
-
+    auto end = std::chrono::high_resolution_clock::now();
+    double total = std::chrono::duration<double>(end - start).count();
     // Print results
-    std::cout << "Total runtime: " << totalRuntime << " seconds" << std::endl;
+    std::cout << "Total runtime: " << total << " seconds" << std::endl;
     std::cout << "Total/Averayge Reader lock time: " << readerLockTime << " / " << (readerLockTime / readerCalled) << " seconds" << std::endl;
     std::cout << "Total/Average Reader wait time: " << readerWaitTime << " / " << (readerWaitTime / readerCalled) << " seconds" << std::endl;
     std::cout << "Total/Average Writer lock time: " << writerLockTime << " / " << (writerLockTime / writerCalled) << " seconds" << std::endl;
